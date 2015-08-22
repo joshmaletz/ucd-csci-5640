@@ -48,6 +48,16 @@ namespace MicroScanner.Domain
             return new Token("EndSym", "END");
         }
 
+        public static Token CreateReadToken()
+        {
+            return new Token("ReadSym", "READ");
+        }
+
+        public static Token CreateWriteToken()
+        {
+            return new Token("WriteSym", "WRITE");
+        }
+
         public static Token CreateAssignToken()
         {
             return new Token("AssignOp", ":=");

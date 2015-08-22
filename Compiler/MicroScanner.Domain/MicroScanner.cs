@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace MicroScanner.Domain
 {
-    using System.Runtime.CompilerServices;
-    using System.Security.Principal;
-    using System.Xml;
+    using System.Collections.Generic;
 
     public class MicroScanner
     {
@@ -49,13 +43,16 @@ namespace MicroScanner.Domain
             else
             {
                 currentToken = GetNextToken(this.program);
+                if (currentToken == null)
+                {
+                    currentToken = this.Scan();
+                }
             }
             return currentToken;
         }
 
         public Token GetNextToken(string currentProgram)
         {
-            //char nextChar = currentProgram[0];
             char nextChar = this.sourceProgram.ReadCurrentCharacter();
             var character = new Character(nextChar);
             Buffer nextBuffer = new Buffer();
@@ -92,7 +89,7 @@ namespace MicroScanner.Domain
                     nextToken = TokenFactory.CreateIntLiteralToken(this.buffer.Flush());
                     break;
                 case CharKind.Colon:
-                    this.buffer.Add(character.Value);
+                    //this.buffer.Add(character.Value);
                     char nextUpE = this.sourceProgram.Inspect();
                     var nextUpCharacterE = new Character(nextUpE);
                     if (nextUpCharacterE.CharKind.Equals(CharKind.Equal))
@@ -106,8 +103,22 @@ namespace MicroScanner.Domain
                         nextToken = TokenFactory.CreateLexicalError(nextBuffer.Flush());
                     }
                     break;
-                    case CharKind.Hyphen:
-                    return TokenFactory.CreateMinusToken();
+                case CharKind.Hyphen:
+                    char nextUpH = this.sourceProgram.Inspect();
+                    var nextUpCharacterH = new Character(nextUpH);
+                    if (nextUpCharacterH.CharKind.Equals(CharKind.Hyphen))
+                    {
+                        // comment - so advance until end of line
+                        char inCommentChar = this.sourceProgram.ReadCurrentCharacter();
+                        while (!inCommentChar.Equals('\n'))
+                        {
+                            inCommentChar = this.sourceProgram.ReadCurrentCharacter();
+                        }
+                    }
+                    else
+                    {
+                        nextToken = TokenFactory.CreateMinusToken();
+                    }
                     break;
                case CharKind.Whitespace:
                     break;
@@ -137,13 +148,23 @@ namespace MicroScanner.Domain
         public Token CheckReserved(string tokenText)
         {
             Token token = null;
-            if ("BEGIN".Equals(tokenText, StringComparison.CurrentCultureIgnoreCase))
+            switch (tokenText.ToUpper())
             {
-                token = TokenFactory.CreateBeginToken();
-            }
-            else
-            {
-                token = TokenFactory.CreateLiteralToken(tokenText);
+                case "BEGIN":
+                    token = TokenFactory.CreateBeginToken();
+                    break;
+                case "END":
+                    token = TokenFactory.CreateEndToken();
+                    break;
+                case "WRITE":
+                    token = TokenFactory.CreateWriteToken();
+                    break;
+                case "READ":
+                    token = TokenFactory.CreateReadToken();
+                    break;
+                default:
+                    token = TokenFactory.CreateLiteralToken(tokenText);
+                    break;
             }
 
             return token;
@@ -158,39 +179,6 @@ namespace MicroScanner.Domain
                 this.outputTokens.Add(currentToken);
             }
             while (currentToken != null && !"EofSym".Equals(currentToken.Name));
-        }
-    }
-
-    public class Buffer : IDisposable
-    {
-        private StringBuilder builder;
-
-        public Buffer()
-        {
-            this.builder = new StringBuilder();
-        }
-
-        public void Dispose()
-        {
-            this.builder.Clear();
-            this.builder = null;
-        }
-
-        public void Add(char value)
-        {
-            this.builder.Append(value);
-        }
-
-        public void Clear()
-        {
-            this.builder.Clear();
-        }
-
-        public string Flush()
-        {
-            string currentValue = this.builder.ToString();
-            this.Clear();
-            return currentValue;
         }
     }
 }

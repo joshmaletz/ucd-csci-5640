@@ -32,6 +32,46 @@ namespace MicroScanner.Tests
         }
 
         [Test]
+        public void DetectAndIgnoreWhitespaceSpaces()
+        {
+            var program = " ";
+            var microScanner = new MicroScanner(program);
+
+            var token = microScanner.Scan();
+            Assert.AreEqual("EofSym", token.Name);
+        }
+
+        [Test]
+        public void DetectAndIgnoreWhitespaceTabs()
+        {
+            var program = "\t";
+            var microScanner = new MicroScanner(program);
+
+            var token = microScanner.Scan();
+            Assert.AreEqual("EofSym", token.Name);
+        }
+
+        [Test]
+        public void DetectAndIgnoreWhitespaceNewlinesN()
+        {
+            var program = "\n";
+            var microScanner = new MicroScanner(program);
+
+            var token = microScanner.Scan();
+            Assert.AreEqual("EofSym", token.Name);
+        }
+
+        [Test]
+        public void DetectAndIgnoreWhitespaceNewLinesR()
+        {
+            var program = "\r";
+            var microScanner = new MicroScanner(program);
+
+            var token = microScanner.Scan();
+            Assert.AreEqual("EofSym", token.Name);
+        }
+
+        [Test]
         public void AllowCreationWithProgramAsString()
         {
             string program = "Begin End";
@@ -57,6 +97,40 @@ namespace MicroScanner.Tests
 
             var token = microScanner.Scan();
             Assert.AreEqual("BeginSym", token.Name);
+            Assert.AreEqual("BEGIN", token.Value);
+        }
+
+        [Test]
+        public void DetectAndReturnReadReservedWord()
+        {
+            string program = "Read";
+            var microScanner = new MicroScanner(program);
+
+            var token = microScanner.Scan();
+            Assert.AreEqual("ReadSym", token.Name);
+            Assert.AreEqual("READ", token.Value);
+        }
+
+        [Test]
+        public void DetectAndReturnWriteReservedWord()
+        {
+            string program = "Write";
+            var microScanner = new MicroScanner(program);
+
+            var token = microScanner.Scan();
+            Assert.AreEqual("WriteSym", token.Name);
+            Assert.AreEqual("WRITE", token.Value);
+        }
+
+        [Test]
+        public void DetectAndReturnEndReservedWord()
+        {
+            string program = "End";
+            var microScanner = new MicroScanner(program);
+
+            var token = microScanner.Scan();
+            Assert.AreEqual("EndSym", token.Name);
+            Assert.AreEqual("END", token.Value);
         }
 
         [Test]
@@ -97,6 +171,17 @@ namespace MicroScanner.Tests
 
             var token = microScanner.Scan();
             Assert.AreEqual("MinusOp", token.Name);
+        }
+
+        [Test]
+        public void DetectAndIgnoreCommentLine()
+        {
+            string program = "-- Some comment 12345\r\n ";
+            var microScanner = new MicroScanner(program);
+
+            var token = microScanner.Scan();
+            Assert.AreEqual("EofSym", token.Name);
+            Assert.AreEqual("EOF", token.Value);
         }
 
         [Test]

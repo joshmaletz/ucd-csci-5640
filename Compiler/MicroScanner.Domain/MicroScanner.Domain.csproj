@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Buffer.cs" />
     <Compile Include="Character.cs" />
     <Compile Include="MicroScanner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
