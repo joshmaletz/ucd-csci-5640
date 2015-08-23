@@ -1,14 +1,53 @@
-﻿namespace MicroScanner.Domain
+﻿// <copyright file="MicroScanner.cs" company="Maletz, Josh" dateCreated="2015-08-22">
+//      Copyright 2015 Maletz, Josh- For eductional purposes. Created while student of UCD CSCI 5640 - Universal Compiler.
+// </copyright>
+
+namespace MicroScanner.Domain
 {
     using System.Collections.Generic;
 
+    /// <summary>
+    /// This is the implmentation of the Micro Scanner for our Ad-Hoc compiler. It follows the desired algorithm 
+    /// quite closely.
+    /// </summary>
     public class MicroScanner
     {
+        /// <summary>
+        /// The input source program
+        /// </summary>
         private string program = string.Empty;
-        private Buffer buffer = new Buffer();
-        private SourceProgram sourceProgram = null;
-        private List<Token> outputTokens = new List<Token>(); 
 
+        /// <summary>
+        /// The buffer to store characters as we are scanning.
+        /// </summary>
+        private Buffer buffer = new Buffer();
+
+        /// <summary>
+        /// The source program abstraction - allows us to inspect and advance.
+        /// </summary>
+        private SourceProgram sourceProgram = null;
+
+        /// <summary>
+        /// The output tokens
+        /// </summary>
+        private List<Token> outputTokens = new List<Token>();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MicroScanner"/> class.
+        /// </summary>
+        /// <param name="program">The program.</param>
+        public MicroScanner(string program)
+        {
+            this.program = program;
+            this.sourceProgram = new SourceProgram(this.program);
+        }
+
+        /// <summary>
+        /// Gets the input.
+        /// </summary>
+        /// <value>
+        /// The input.
+        /// </value>
         public string Input
         {
             get
@@ -17,20 +56,39 @@
             }
         }
 
+        /// <summary>
+        /// Gets the output.
+        /// </summary>
+        /// <value>
+        /// The output.
+        /// </value>
         public List<Token> Output
         {
             get
             {
                 return new List<Token>(this.outputTokens);
             }
-        } 
-
-        public MicroScanner(string program)
+        }
+        
+        /// <summary>
+        /// This is a helper method that just repeatedly calls scan on the source program until the End of file symbol 
+        /// is encountered. As the tokens ae returned, we store them for use by callers.
+        /// </summary>
+        public void ScanAll()
         {
-            this.program = program;
-            this.sourceProgram = new SourceProgram(this.program);
+            Token currentToken = null;
+            do
+            {
+                currentToken = this.Scan();
+                this.outputTokens.Add(currentToken);
+            }
+            while (currentToken != null && !"EofSym".Equals(currentToken.Name));
         }
 
+        /// <summary>
+        /// Scans the input to find the next valid token.
+        /// </summary>
+        /// <returns>The next valid token, if any. Will return the EOF token when at the end of the input.</returns>
         public Token Scan()
         {
             Token currentToken;
@@ -40,7 +98,7 @@
             }
             else
             {
-                currentToken = GetNextToken(this.program);
+                currentToken = GetNextToken();
                 if (currentToken == null)
                 {
                     currentToken = this.Scan();
@@ -49,16 +107,29 @@
             return currentToken;
         }
 
-        public Token GetNextToken(string currentProgram)
+        /// <summary>
+        /// Contains the logic needed to detect and return the next token in the source program.
+        /// TODO: Refactor into helper methods and recursive functions. Use Character directly and not 'char'
+        /// </summary>
+        /// <returns>The next token in the source pogram.</returns>
+        private Token GetNextToken()
         {
+            // start with the next available character in the source program
             char nextChar = this.sourceProgram.ReadCurrentCharacter();
             var character = new Character(nextChar);
+            
+            // store internal buffer to make sharing any lexical errors easier.
             Buffer nextBuffer = new Buffer();
             nextBuffer.Add(nextChar);
+            
+            // create placeholder for token to be returned
             Token nextToken = null;
+            
+            // this could use some cleanup, but essentially we just perform the already discussed algorithm based on
+            // the kind of character we encounter as we scan the file. Each case handled a different kind.
             switch (character.CharKind)
             {
-               case CharKind.Letter:
+                case CharKind.Letter:
                     this.buffer.Add(character.Value);
                     char nextUp = this.sourceProgram.Inspect();
                     var nextUpCharacter = new Character(nextUp);
@@ -87,7 +158,6 @@
                     nextToken = TokenFactory.CreateIntLiteralToken(this.buffer.Flush());
                     break;
                 case CharKind.Colon:
-                    //this.buffer.Add(character.Value);
                     char nextUpE = this.sourceProgram.Inspect();
                     var nextUpCharacterE = new Character(nextUpE);
                     if (nextUpCharacterE.CharKind.Equals(CharKind.Equal))
@@ -118,9 +188,9 @@
                         nextToken = TokenFactory.CreateMinusToken();
                     }
                     break;
-               case CharKind.Whitespace:
+                case CharKind.Whitespace:
                     break;
-               case CharKind.LeftParen:
+                case CharKind.LeftParen:
                     nextToken = TokenFactory.CreateLeftParenToken();
                     break;
                 case CharKind.RightParen:
@@ -143,7 +213,14 @@
             return nextToken;
         }
 
-        public Token CheckReserved(string tokenText)
+        /// <summary>
+        /// Checks passed in token text to see if the value is that of a reserved word. 
+        /// </summary>
+        /// <param name="tokenText">The token text.</param>
+        /// <returns>If it is a reserved word, this
+        /// function returns a token for the reserved word; otherwise it just returns the passed in text as a 
+        /// Literal (Id).</returns>
+        private Token CheckReserved(string tokenText)
         {
             Token token = null;
             switch (tokenText.ToUpper())
@@ -166,17 +243,6 @@
             }
 
             return token;
-        }
-
-        public void ScanAll()
-        {
-            Token currentToken = null;
-            do
-            {
-                currentToken = this.Scan();
-                this.outputTokens.Add(currentToken);
-            }
-            while (currentToken != null && !"EofSym".Equals(currentToken.Name));
         }
     }
 }

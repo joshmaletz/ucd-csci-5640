@@ -1,5 +1,14 @@
-﻿namespace MicroScanner.Domain
+﻿// <copyright file="TokenFactory.cs" company="Maletz, Josh" dateCreated="2015-08-22">
+//      Copyright 2015 Maletz, Josh- For eductional purposes. Created while student of UCD CSCI 5640 - Universal Compiler.
+// </copyright>
+
+namespace MicroScanner.Domain
 {
+    /// <summary>
+    /// This is a helper object I am using to return tokens. I decided to not create 'typed' tokens for this 
+    /// implementation, so this factory only creates tokens where the names of the tokens are the only things that 
+    /// differentiate them. May change in the future if it helps.
+    /// </summary>
     public class TokenFactory
     {
         public static Token CreateEndOfFileToken()

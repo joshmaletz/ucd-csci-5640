@@ -1,12 +1,19 @@
-﻿namespace MicroScanner
+﻿// <copyright file="ScannerContext.cs" company="Maletz, Josh" dateCreated="2015-08-22">
+//      Copyright 2015 Maletz, Josh- For eductional purposes. Created while student of UCD CSCI 5640 - Universal Compiler.
+// </copyright>
+
+namespace MicroScanner
 {
     using System;
     using System.Collections.Generic;
-    using System.Text;
     using System.IO;
+    using System.Text;
     
     using MicroScanner.Domain;
 
+    /// <summary>
+    /// The ScannerContext takes care of the input and output files and executes the Scanner to get the output.
+    /// </summary>
     public class ScannerContext
     {
         public string InputFile { get; private set; }
@@ -21,6 +28,9 @@
             this.OutputFile = outputFile;
         }
 
+        /// <summary>
+        /// Loads the input file into the SourceProgram abstraction.
+        /// </summary>
         public void LoadInput()
         {
             try
@@ -33,14 +43,20 @@
             }
         }
 
+        /// <summary>
+        /// Scans the program and collects the output tokens.
+        /// </summary>
         public void ScanProgram()
         {
-           var microScanner = new MicroScanner(this.inputProgram);
+            var microScanner = new MicroScanner(this.inputProgram);
             microScanner.ScanAll();
 
             this.Tokens = new List<Token>(microScanner.Output);
         }
 
+        /// <summary>
+        /// Flushes the output to the specified filename, and a verbose file with matches for testing purposes.
+        /// </summary>
         public void FlushOutput()
         {
             WriteTokensToFile();

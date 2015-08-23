@@ -1,4 +1,8 @@
-﻿namespace MicroScanner.Tests
+﻿// <copyright file="ScannerShould.cs" company="Maletz, Josh" dateCreated="2015-08-22">
+//      Copyright 2015 Maletz, Josh- For eductional purposes. Created while student of UCD CSCI 5640 - Universal Compiler.
+// </copyright>
+
+namespace MicroScanner.Tests
 {
     using MicroScanner.Domain;
     using NUnit.Framework;
