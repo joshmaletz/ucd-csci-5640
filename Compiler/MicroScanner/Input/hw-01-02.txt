@@ -1,0 +1,17 @@
+﻿BEGIN 
+	--The second program for homework #1
+	READ(A1, A2, A3);
+	READ(B1, B2, B3);
+	
+	-- Add up the As and Bs to make some Cs
+	C1 := (A1+B2);
+	C2 := (A2+B2);
+	C3 := (A3+B3);
+
+	-- Do some arbitrary ops
+	D1 := (C1 + (C2 + C3)) + 100;
+	D2_R2 := (1000 - D1) + (450 - 150 - 200 + 30 - 130); 
+	
+	WRITE(C1, C2, C3, D1, D2_R2);
+	-- End the silly program
+END

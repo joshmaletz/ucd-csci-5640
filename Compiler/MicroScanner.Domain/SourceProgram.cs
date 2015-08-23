@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MicroScanner.Domain
+﻿namespace MicroScanner.Domain
 {
+    using System;
+
     public class SourceProgram
     {
         private string sourceProgram = string.Empty;

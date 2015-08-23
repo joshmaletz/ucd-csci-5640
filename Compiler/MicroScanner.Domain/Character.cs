@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MicroScanner.Domain
+﻿namespace MicroScanner.Domain
 {
-    using System.Runtime.CompilerServices;
-    using System.Runtime.Remoting.Messaging;
     using System.Text.RegularExpressions;
 
     public class Character
@@ -70,7 +62,6 @@ namespace MicroScanner.Domain
             {
                 this.CharKind = CharKind.Unknown;
             }
-
         }
     }
 

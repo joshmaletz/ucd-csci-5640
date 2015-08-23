@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MicroScanner
+﻿namespace MicroScanner
 {
+    using System;
+
     class Program
     {
         static void Main(string[] args)
@@ -24,25 +20,6 @@ namespace MicroScanner
             scannerContext.LoadInput();
             scannerContext.ScanProgram();
             scannerContext.FlushOutput();
-
-            PrintOutputToScreen(scannerContext);
-        }
-
-        private static void PrintOutputToScreen(ScannerContext scannerContext)
-        {
-            Console.WriteLine();
-            Console.WriteLine("=============================================");
-            Console.WriteLine("Tokens for input program: ");
-            var tokens = scannerContext.Tokens;
-            
-            foreach (var token in tokens)
-            {
-                Console.WriteLine("\t{0} - {1}", token.Name, token.Value);
-            }
-            
-            Console.WriteLine();
-            Console.WriteLine("=============================================");
-            Console.WriteLine();
         }
 
         private static bool GuardUsage(string[] args)

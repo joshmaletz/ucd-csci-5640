@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MicroScanner.Tests
+﻿namespace MicroScanner.Tests
 {
+    using System ;
     using MicroScanner.Domain;
-
     using NUnit.Framework;
 
     public class SourceProgramShould
@@ -31,12 +25,11 @@ namespace MicroScanner.Tests
         }
 
         [Test]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void AdvanceOnEmptyShouldFail()
         {
             var source = new SourceProgram(string.Empty);
-            
-            source.Advance();
+
+            Assert.Throws<InvalidOperationException>(() => source.Advance());
         }
 
         [Test]

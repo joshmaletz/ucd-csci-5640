@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MicroScanner
+﻿namespace MicroScanner
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
     using System.IO;
-    using System.Linq.Expressions;
-    using System.Security.Cryptography.X509Certificates;
-    using System.Security.Principal;
-
+    
     using MicroScanner.Domain;
 
     public class ScannerContext
@@ -53,6 +47,17 @@ namespace MicroScanner
             WriteTokensWithMatchesToFile();
         }
 
+        private void WriteTokensToFile()
+        {
+            var tokenOutput = new StringBuilder(); 
+            foreach (var token in this.Tokens)
+            {
+                tokenOutput.AppendLine(token.Name);
+            }
+
+            this.WriteFile(this.OutputFile, tokenOutput.ToString());
+        }
+
         private void WriteTokensWithMatchesToFile()
         {
             var tokenOutput = new StringBuilder();
@@ -65,21 +70,28 @@ namespace MicroScanner
                     string.Format("{0}{1}{2}", token.Name, token.Name.Length >= 8 ? "\t" : "\t\t", token.Value));
             }
 
-            string verboseOutputPath = Path.ChangeExtension(
-                this.OutputFile,
-                string.Format("verbose{0}", Path.GetExtension(this.OutputFile)));
-            File.WriteAllText(verboseOutputPath, tokenOutput.ToString());
+            this.WriteFile(this.GetVerboseOutputPath(), tokenOutput.ToString());
         }
 
-        private void WriteTokensToFile()
+        private string GetVerboseOutputPath()
         {
-            var tokenOutput = new StringBuilder(); 
-            foreach (var token in this.Tokens)
-            {
-                tokenOutput.AppendLine(token.Name);
-            }
+            return Path.ChangeExtension(
+                this.OutputFile,
+                string.Format("verbose{0}", Path.GetExtension(this.OutputFile)));
+        }
 
-            File.WriteAllText(this.OutputFile, tokenOutput.ToString());
+        private void WriteFile(string path, string contents)
+        {
+            Console.WriteLine("Creating output file: {0}", path);
+
+            try
+            {
+                File.WriteAllText(path, contents);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Could not write output file. Details: {0}", e.ToString());
+            }
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿
-
-namespace MicroScanner.Domain
+﻿namespace MicroScanner.Domain
 {
     using System.Collections.Generic;
 

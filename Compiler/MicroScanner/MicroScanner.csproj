@@ -52,6 +52,9 @@
     <Content Include="Input\hw-01-01.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Input\hw-01-02.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MicroScanner.Domain\MicroScanner.Domain.csproj">
