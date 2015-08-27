@@ -107,6 +107,25 @@ namespace MicroScanner.Domain
             return currentToken;
         }
 
+        //public Token PeekNextToken()
+        //{
+        //    Token currentToken;
+        //    if (this.sourceProgram.IsAtEnd())
+        //    {
+        //        currentToken = TokenFactory.CreateEndOfFileToken();
+
+        //    }
+        //    else
+        //    {
+        //        currentToken = GetNextToken();
+        //        if (currentToken == null)
+        //        {
+        //            currentToken = this.Scan();
+        //        }
+        //    }
+        //    return currentToken();
+        //}
+
         /// <summary>
         /// Contains the logic needed to detect and return the next token in the source program.
         /// TODO: Refactor into helper methods and recursive functions. Use Character directly and not 'char'
