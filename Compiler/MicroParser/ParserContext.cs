@@ -1,20 +1,16 @@
-﻿// <copyright file="ScannerContext.cs" company="Maletz, Josh" dateCreated="2015-08-22">
+﻿// <copyright file="ParserContext.cs" company="Maletz, Josh" dateCreated="2015-08-26">
 //      Copyright 2015 Maletz, Josh- For eductional purposes. Created while student of UCD CSCI 5640 - Universal Compiler.
 // </copyright>
-
-using System.Dynamic;
 
 namespace MicroParser
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Text;
     
     using MicroParser.Domain;
 
     /// <summary>
-    /// The ScannerContext takes care of the input and output files and executes the Scanner to get the output.
+    /// The ParserContext takes care of the input and output files and executes the Parser to get the output.
     /// </summary>
     public class ParserContext
     {
@@ -46,7 +42,7 @@ namespace MicroParser
         }
 
         /// <summary>
-        /// Scans the program and collects the output tokens.
+        /// Parses the program and collects the output representation.
         /// </summary>
         public void ParseProgram()
         {
@@ -57,12 +53,12 @@ namespace MicroParser
         }
 
         /// <summary>
-        /// Flushes the output to the specified filename, and a verbose file with matches for testing purposes.
+        /// Flushes the output to the specified filename. The default output 
+        /// is shaped to see the nested calls as we parse.
         /// </summary>
         public void FlushOutput()
         {
             WriteDefaultOutputToFile();
-            //WriteTokensWithMatchesToFile();
         }
 
         private void WriteDefaultOutputToFile()
@@ -70,28 +66,7 @@ namespace MicroParser
             this.WriteFile(this.OutputFile, this.ShapedOutput);
         }
 
-        //private void WriteTokensWithMatchesToFile()
-        //{
-        //    var tokenOutput = new StringBuilder();
-        //    tokenOutput.AppendLine("Token\t\tMatched-Value");
-        //    tokenOutput.AppendLine("-----\t\t-------------");
-
-        //    foreach (var token in this.Tokens)
-        //    {
-        //        tokenOutput.AppendLine(
-        //            string.Format("{0}{1}{2}", token.Name, token.Name.Length >= 8 ? "\t" : "\t\t", token.Value));
-        //    }
-
-        //    this.WriteFile(this.GetVerboseOutputPath(), tokenOutput.ToString());
-        //}
-
-        private string GetVerboseOutputPath()
-        {
-            return Path.ChangeExtension(
-                this.OutputFile,
-                string.Format("verbose{0}", Path.GetExtension(this.OutputFile)));
-        }
-
+        
         private void WriteFile(string path, string contents)
         {
             Console.WriteLine("Creating output file: {0}", path);

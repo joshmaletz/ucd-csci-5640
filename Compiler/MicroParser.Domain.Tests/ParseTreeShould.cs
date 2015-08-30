@@ -11,38 +11,14 @@ namespace MicroParser.Domain.Tests
     [TestFixture]   
     public class ParseTreeShould
     {
-        public ParseTreeShould()
-        {
-        }
-
-        [Test]
-        public void AllowNestedOutputAtEachLevel2()
-        {
-            var tree = new ParseTree("<system goal>");
-            tree.AddTerminalChild("begin");
-            //tree.AddChild(BuildStatement());
-            tree.AddChildNode(BuildStatementNode());
-            tree.AddTerminalChild("end");
-            tree.BuildLinesDifferently();
-            Assert.AreEqual("<system goal>", tree.Lines[0]);
-            Assert.AreEqual("begin <statement> end ", tree.Lines[1]);
-            Assert.AreEqual("begin Id := <expression> ; end ", tree.Lines[2]);
-            Assert.AreEqual("begin Id := <primary> <add op> <expression> ; end ", tree.Lines[3]);
-            Assert.AreEqual("begin Id := Id <add op> <expression> ; end ", tree.Lines[4]);
-            Assert.AreEqual("begin Id := Id PlusOp <expression> ; end ", tree.Lines[5]);
-            Assert.AreEqual("begin Id := Id PlusOp <primary> ; end ", tree.Lines[6]);
-            Assert.AreEqual("begin Id := Id PlusOp IdX ; end ", tree.Lines[7]);
-        }
-
         [Test]
         public void AllowNestedOutputAtEachLevel()
         {
             var tree = new ParseTree("<system goal>");
             tree.AddTerminalChild("begin");
-            //tree.AddChild(BuildStatement());
             tree.AddChildNode(BuildStatementNode());
             tree.AddTerminalChild("end");
-            tree.BuildLines();
+            tree.BuildLinesDifferently();
             Assert.AreEqual("<system goal>", tree.Lines[0]);
             Assert.AreEqual("begin <statement> end ", tree.Lines[1]);
             Assert.AreEqual("begin Id := <expression> ; end ", tree.Lines[2]);

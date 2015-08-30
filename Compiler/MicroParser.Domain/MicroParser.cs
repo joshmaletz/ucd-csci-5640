@@ -1,23 +1,47 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// <copyright file="MicroParser.cs" company="Maletz, Josh" dateCreated="2015-08-26">
+//      Copyright 2015 Maletz, Josh- For eductional purposes. Created while student of UCD CSCI 5640 - Universal Compiler.
+// </copyright>
 
 namespace MicroParser.Domain
 {
+    using System;
     using MicroScanner.Domain;
 
+    /// <summary>
+    /// The MicroParser is the main focus of this assignment. It follows the 
+    /// algorithm as defiend in our classwork. There are a couple of possbily 
+    /// important tweaks to note. My Scanner, as implemented last week, does 
+    /// not support a "NextToken" look ahead. As I am not yet sure what will 
+    /// be needed to build the MicroGeneraator, I held off on refactoring the
+    /// existing scanner, and instead wrapped it in a 
+    ///"Peekable Scanner" abstraction. All this does is create the illusion that 
+    /// the scanner itself is allowing us to peek ahead. See the <see cref="PeekableScanner"/> 
+    /// for more details.
+    /// </summary>
     public class MicroParser
     {
         private PeekableScanner peekScanner = null;
         private ShapedWriter shapedWriter = new ShapedWriter();
 
+        /// <summary>
+        /// This returns the Parser output as a nested, shaped string.
+        /// </summary>
         public string Output
         {
             get { return this.shapedWriter.Content; }
         }
 
+        /// <summary>
+        /// We create a microscanner, wrap it in a peekable scanner, and then start the
+        /// parsing routine by calling SystemGoal. In order to support the shaped output,
+        /// you will see all method calls preceded and followed by shapewriter push/pop calls.
+        /// For simplicity's sake, I left it like this, but would most likely wrap this in 
+        /// a nested lambda call to the shapewriter to call the actual methods. Wasn't sure 
+        /// where this is evolving with the micro generator, so might do that next week depending. 
+        /// I don't like having the output format tied to the algorithm. Hence trying to create 
+        /// the parse tree during and then formatting on that structure after the fact.
+        /// </summary>
+        /// <param name="program"></param>
         public void Parse(string program)
         {
             this.microScanner = new MicroScanner(program);
@@ -173,8 +197,6 @@ namespace MicroParser.Domain
 
         private void Ident()
         {
-            //Console.WriteLine("<ident>");
-
             Match("Id");
         }
 
@@ -202,7 +224,6 @@ namespace MicroParser.Domain
         private Token NextToken()
         {
             return this.peekScanner.NextToken();
-            //return new Token("Null", "Null-Must implement");
         }
 
         private void Match(string legalTokenName)
@@ -219,8 +240,6 @@ namespace MicroParser.Domain
 
         private Token Scan()
         {
-           // this.peekScanner.Scan();
-           // return this.microScanner.Scan();
             return this.peekScanner.Scan();
         }
 
@@ -234,12 +253,5 @@ namespace MicroParser.Domain
         }
 
         private MicroScanner microScanner = null;
-    }
-
-    public class SyntaxErrorException : Exception
-    {
-        public SyntaxErrorException(string message) : base(message)
-        {
-        }
     }
 }
