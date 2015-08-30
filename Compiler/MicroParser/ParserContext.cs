@@ -2,6 +2,8 @@
 //      Copyright 2015 Maletz, Josh- For eductional purposes. Created while student of UCD CSCI 5640 - Universal Compiler.
 // </copyright>
 
+using System.Dynamic;
+
 namespace MicroParser
 {
     using System;
@@ -18,7 +20,7 @@ namespace MicroParser
     {
         public string InputFile { get; private set; }
         public string OutputFile { get; private set; }
-        //public List<Token> Tokens = new List<Token>();
+        public string ShapedOutput { get; private set; }
 
         private string inputProgram = string.Empty;
 
@@ -51,7 +53,7 @@ namespace MicroParser
             var microParser = new MicroParser();
             microParser.Parse(this.inputProgram);
 
-            //this.Tokens = new List<Token>(microScanner.Output);
+            this.ShapedOutput = microParser.Output;
         }
 
         /// <summary>
@@ -59,20 +61,14 @@ namespace MicroParser
         /// </summary>
         public void FlushOutput()
         {
-            //WriteTokensToFile();
+            WriteDefaultOutputToFile();
             //WriteTokensWithMatchesToFile();
         }
 
-        //private void WriteTokensToFile()
-        //{
-        //    var tokenOutput = new StringBuilder(); 
-        //    foreach (var token in this.Tokens)
-        //    {
-        //        tokenOutput.AppendLine(token.Name);
-        //    }
-
-        //    this.WriteFile(this.OutputFile, tokenOutput.ToString());
-        //}
+        private void WriteDefaultOutputToFile()
+        {
+            this.WriteFile(this.OutputFile, this.ShapedOutput);
+        }
 
         //private void WriteTokensWithMatchesToFile()
         //{

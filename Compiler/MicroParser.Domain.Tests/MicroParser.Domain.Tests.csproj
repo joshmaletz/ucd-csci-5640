@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="ParseTreeShould.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ShapedWriterShould.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

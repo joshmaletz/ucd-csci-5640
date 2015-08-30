@@ -8,37 +8,15 @@ namespace MicroParser.Domain
 {
     using MicroScanner.Domain;
 
-    public class PeekableScanner {
-
-        public PeekableScanner (MicroScanner scanner){
-
-            tokenQueue = new Queue<Token>();
-            scanner.ScanAll();
-            List<Token> tokensInOrder = new List<Token>(scanner.Output);
-
-            foreach (var token in tokensInOrder)
-            {
-                tokenQueue.Enqueue(token);
-            }
-        }
-
-        public Token Scan()
-        {
-            return tokenQueue.Dequeue();
-        }
-
-        public Token NextToken()
-        {
-            return tokenQueue.Peek();
-        }
-
-        private Queue<Token> tokenQueue = null;
-
-    } 
-
     public class MicroParser
     {
         private PeekableScanner peekScanner = null;
+        private ShapedWriter shapedWriter = new ShapedWriter();
+
+        public string Output
+        {
+            get { return this.shapedWriter.Content; }
+        }
 
         public void Parse(string program)
         {
@@ -50,26 +28,28 @@ namespace MicroParser.Domain
 
         private void SystemGoal()
         {
-            Console.WriteLine("<SystemGoal>");
+            this.shapedWriter.PushWrite("<SystemGoal>");
 
             Program();
             Match("EofSym");
 
-            
+            this.shapedWriter.PopTab();
         }
 
         private void Program()
         {
-            Console.WriteLine("<program>");
+            this.shapedWriter.PushWrite("<program>");
 
             Match("BeginSym");
             StatementList();
             Match("EndSym");
+
+            this.shapedWriter.PopTab();
         }
 
         private void StatementList()
         {
-            Console.WriteLine("<statement list>");
+            this.shapedWriter.PushWrite("<statement list>");
 
             Statement();
             var nextToken = NextToken();
@@ -83,11 +63,13 @@ namespace MicroParser.Domain
                 default:
                     break;
             }
+
+            this.shapedWriter.PopTab();
         }
 
         private void Statement()
         {
-            Console.WriteLine("<statement>");
+            this.shapedWriter.PushWrite("<statement>");
 
             var nextToken = NextToken();
             switch (nextToken.Name)
@@ -116,11 +98,13 @@ namespace MicroParser.Domain
                     SyntaxError(nextToken);
                     break;
             }
+
+            this.shapedWriter.PopTab();
         }
 
         private void IdList()
         {
-            Console.WriteLine("<id list>");
+            this.shapedWriter.PushWrite("<id list>");
 
             Ident();
             if ("Comma".Equals(NextToken().Name, StringComparison.OrdinalIgnoreCase))
@@ -128,11 +112,13 @@ namespace MicroParser.Domain
                 Match("Comma");
                 IdList();
             }
+
+            this.shapedWriter.PopTab();
         }
 
         private void ExprList()
         {
-            Console.WriteLine("<expr list>");
+            this.shapedWriter.PushWrite("<expr list>");
 
             Expression();
             if ("Comma".Equals(NextToken().Name, StringComparison.OrdinalIgnoreCase))
@@ -140,11 +126,13 @@ namespace MicroParser.Domain
                 Match("Comma");
                 ExprList();
             }
+
+            this.shapedWriter.PopTab();
         }
 
         private void Expression()
         {
-            Console.WriteLine("<expression>");
+            this.shapedWriter.PushWrite("<expression>");
 
             Primary();
             var nextToken = NextToken();
@@ -153,11 +141,13 @@ namespace MicroParser.Domain
                 AddOp();
                 Expression();
             }
+
+            this.shapedWriter.PopTab();
         }
 
         private void Primary()
         {
-            Console.WriteLine("<primary>");
+            this.shapedWriter.PushWrite("<primary>");
 
             var nextToken = NextToken();
             switch (nextToken.Name)
@@ -177,6 +167,8 @@ namespace MicroParser.Domain
                     SyntaxError(nextToken);
                     break;
             }
+
+            this.shapedWriter.PopTab();
         }
 
         private void Ident()
@@ -188,7 +180,7 @@ namespace MicroParser.Domain
 
         private void AddOp()
         {
-            Console.WriteLine("<add op>");
+            this.shapedWriter.PushWrite("<add op>");
 
             var nextToken = NextToken();
             switch (nextToken.Name)
@@ -203,6 +195,8 @@ namespace MicroParser.Domain
                     SyntaxError(nextToken);
                     break;
             }
+
+            this.shapedWriter.PopTab();
         }
 
         private Token NextToken()
@@ -219,7 +213,8 @@ namespace MicroParser.Domain
                 SyntaxError(currentToken);
             }
 
-            Console.WriteLine(currentToken.Name);
+            this.shapedWriter.PushWrite(currentToken.Name);
+            this.shapedWriter.PopTab();
         }
 
         private Token Scan()

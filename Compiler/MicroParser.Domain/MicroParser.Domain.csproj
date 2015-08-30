@@ -41,7 +41,9 @@
   <ItemGroup>
     <Compile Include="MicroParser.cs" />
     <Compile Include="ParseTree.cs" />
+    <Compile Include="PeekableScanner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ShapedWriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MicroScanner.Domain\MicroScanner.Domain.csproj">
