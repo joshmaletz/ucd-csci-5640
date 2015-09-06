@@ -22,13 +22,33 @@ namespace MicroParser.Domain
     {
         private PeekableScanner peekScanner = null;
         private ShapedWriter shapedWriter = new ShapedWriter();
-
+        private MicroScanner microScanner = null;
+        private SemanticRoutines semanticRoutines;
+        private CompilerOutput compilerOutput = new CompilerOutput();
+        
         /// <summary>
         /// This returns the Parser output as a nested, shaped string.
         /// </summary>
         public string Output
         {
             get { return this.shapedWriter.Content; }
+        }
+
+        /// <summary>
+        /// This returns the currently generated code the semantic routines have provided.
+        /// </summary>
+        public string MachineCode
+        {
+            get { return semanticRoutines.GeneratedCode; }
+        }
+
+        /// <summary>
+        /// This is used to gather a more detailed set of actions that are taken by the compiler to create the 
+        /// machine code output.
+        /// </summary>
+        public CompilerOutput CompilerParseActionList
+        {
+            get { return this.compilerOutput; }
         }
 
         /// <summary>
@@ -47,15 +67,20 @@ namespace MicroParser.Domain
             this.microScanner = new MicroScanner(program);
             this.peekScanner = new PeekableScanner(this.microScanner);
 
+            this.semanticRoutines = new SemanticRoutines(peekScanner, compilerOutput);
+
             SystemGoal();
         }
 
         private void SystemGoal()
         {
             this.shapedWriter.PushWrite("<SystemGoal>");
+            this.compilerOutput.AddRecord(ParseActionRecord.Create("Call SystemGoal", this.peekScanner.Remaining, this.semanticRoutines.GeneratedCode));
 
             Program();
             Match("EofSym");
+
+            semanticRoutines.Finish();
 
             this.shapedWriter.PopTab();
         }
@@ -63,7 +88,10 @@ namespace MicroParser.Domain
         private void Program()
         {
             this.shapedWriter.PushWrite("<program>");
+            this.compilerOutput.AddRecord(ParseActionRecord.Create("Call Program", this.peekScanner.Remaining, this.semanticRoutines.GeneratedCode));
 
+            semanticRoutines.Start();
+            
             Match("BeginSym");
             StatementList();
             Match("EndSym");
@@ -74,6 +102,7 @@ namespace MicroParser.Domain
         private void StatementList()
         {
             this.shapedWriter.PushWrite("<statement list>");
+            this.compilerOutput.AddRecord(ParseActionRecord.Create("Call StatementList", this.peekScanner.Remaining, this.semanticRoutines.GeneratedCode));
 
             Statement();
             var nextToken = NextToken();
@@ -94,14 +123,20 @@ namespace MicroParser.Domain
         private void Statement()
         {
             this.shapedWriter.PushWrite("<statement>");
+            this.compilerOutput.AddRecord(ParseActionRecord.Create("Call Statement", this.peekScanner.Remaining, this.semanticRoutines.GeneratedCode));
+
+
+            ExprRecord identifier = ExprRecord.Create();
+            ExprRecord expr = ExprRecord.Create();
 
             var nextToken = NextToken();
             switch (nextToken.Name)
             {
                 case "Id":
-                    Ident();
+                    Ident(identifier);
                     Match("AssignOp");
-                    Expression();
+                    Expression(out expr);
+                    semanticRoutines.Assign(identifier, expr);
                     Match("SemiColon");
                     break;
                 case "ReadSym":
@@ -129,8 +164,12 @@ namespace MicroParser.Domain
         private void IdList()
         {
             this.shapedWriter.PushWrite("<id list>");
+            this.compilerOutput.AddRecord(ParseActionRecord.Create("Call IdList", this.peekScanner.Remaining, this.semanticRoutines.GeneratedCode));
 
-            Ident();
+            ExprRecord identifier = ExprRecord.Create();
+
+            Ident(identifier);
+            semanticRoutines.ReadId(identifier);
             if ("Comma".Equals(NextToken().Name, StringComparison.OrdinalIgnoreCase))
             {
                 Match("Comma");
@@ -140,11 +179,23 @@ namespace MicroParser.Domain
             this.shapedWriter.PopTab();
         }
 
+        private void Ident(ExprRecord result)
+        {
+            this.compilerOutput.AddRecord(ParseActionRecord.Create("Call Ident", this.peekScanner.Remaining, this.semanticRoutines.GeneratedCode));
+
+            Match("Id");
+            semanticRoutines.ProcessId(result);
+        }
+
         private void ExprList()
         {
             this.shapedWriter.PushWrite("<expr list>");
+            this.compilerOutput.AddRecord(ParseActionRecord.Create("Call ExpressionList", this.peekScanner.Remaining, this.semanticRoutines.GeneratedCode));
 
-            Expression();
+            ExprRecord expr = ExprRecord.Create();
+
+            Expression(out expr);
+            semanticRoutines.WriteExpr(expr);
             if ("Comma".Equals(NextToken().Name, StringComparison.OrdinalIgnoreCase))
             {
                 Match("Comma");
@@ -154,38 +205,96 @@ namespace MicroParser.Domain
             this.shapedWriter.PopTab();
         }
 
-        private void Expression()
+        private void Expression(out ExprRecord exprRec)
         {
             this.shapedWriter.PushWrite("<expression>");
+            this.compilerOutput.AddRecord(ParseActionRecord.Create("Call Expression", this.peekScanner.Remaining, this.semanticRoutines.GeneratedCode));
 
-            Primary();
+            ExprRecord leftOperand = ExprRecord.Create(), rightOperand = ExprRecord.Create();
+            OpRecord op = new OpRecord();
+            
+            Primary(leftOperand);
             var nextToken = NextToken();
-            if ("PlusOp".Equals(nextToken.Name, StringComparison.OrdinalIgnoreCase) || "MinusOp".Equals(nextToken.Name, StringComparison.OrdinalIgnoreCase))
+
+            if (IsPlusOrMinus(nextToken))
             {
-                AddOp();
-                Expression();
+                AddOp(op);
+                Expression(out rightOperand);
+                exprRec = semanticRoutines.GenInfix(leftOperand, op, rightOperand);
+            }
+            else
+            {
+                exprRec = leftOperand;
             }
 
             this.shapedWriter.PopTab();
         }
 
-        private void Primary()
+        //private void Expression(out ExprRecord exprRec)
+        //{
+        //    this.shapedWriter.PushWrite("<expression>");
+
+        //    ExprRecord leftOperand = ExprRecord.Create(), rightOperand = ExprRecord.Create();
+        //    OpRecord op = new OpRecord();
+        //    exprRec = leftOperand;
+        //    Primary(leftOperand);
+        //    var nextToken = NextToken();
+        //    // use iteration instead of recursion...
+        //    while (IsPlusOrMinus(nextToken))
+        //    {
+        //        AddOp(op);
+        //        Expression(out rightOperand);
+        //        exprRec = semanticRoutines.GenInfix(leftOperand, op, rightOperand);
+
+        //        nextToken = NextToken();
+        //    }
+
+
+        //    //if ("PlusOp".Equals(nextToken.Name, StringComparison.OrdinalIgnoreCase))
+        //    //{
+        //    //    AddOp(op);
+        //    //    Expression(out rightOperand);
+        //    //    exprRec = semanticRoutines.GenInfix(leftOperand, op, rightOperand);
+        //    //}
+        //    //else if ("MinusOp".Equals(nextToken.Name, StringComparison.OrdinalIgnoreCase))
+        //    //{
+        //    //    AddOp(op);
+        //    //    exprRec = semanticRoutines.GenInfix(leftOperand, op, rightOperand);
+        //    //    Expression(out rightOperand);
+        //    //}
+        //    //else
+        //    //{
+        //    //    exprRec = leftOperand;
+        //    //}
+
+        //    this.shapedWriter.PopTab();
+        //}
+
+        private bool IsPlusOrMinus(Token nextToken)
+        {
+            return "PlusOp".Equals(nextToken.Name, StringComparison.OrdinalIgnoreCase) ||
+                   "MinusOp".Equals(nextToken.Name, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void Primary(ExprRecord result)
         {
             this.shapedWriter.PushWrite("<primary>");
+            this.compilerOutput.AddRecord(ParseActionRecord.Create("Call Primary", this.peekScanner.Remaining, this.semanticRoutines.GeneratedCode));
 
             var nextToken = NextToken();
             switch (nextToken.Name)
             {
                 case "LParen":
                     Match("LParen");
-                    Expression();
+                    Expression(out result);
                     Match("RParen");
                     break;
                 case "Id":
-                    Ident();
+                    Ident(result);
                     break;
                 case "IntLiteral":
                     Match("IntLiteral");
+                    semanticRoutines.ProcessLiteral(result);
                     break;
                 default:
                     SyntaxError(nextToken);
@@ -195,23 +304,21 @@ namespace MicroParser.Domain
             this.shapedWriter.PopTab();
         }
 
-        private void Ident()
-        {
-            Match("Id");
-        }
-
-        private void AddOp()
+        private void AddOp(OpRecord op)
         {
             this.shapedWriter.PushWrite("<add op>");
+            this.compilerOutput.AddRecord(ParseActionRecord.Create("Call AddOp", this.peekScanner.Remaining, this.semanticRoutines.GeneratedCode));
 
             var nextToken = NextToken();
             switch (nextToken.Name)
             {
                 case "PlusOp":
                     Match("PlusOp");
+                    semanticRoutines.ProcessOp(op);
                     break;
                 case "MinusOp":
                     Match("MinusOp");
+                    semanticRoutines.ProcessOp(op);
                     break;
                 default:
                     SyntaxError(nextToken);
@@ -234,6 +341,8 @@ namespace MicroParser.Domain
                 SyntaxError(currentToken);
             }
 
+            this.compilerOutput.AddRecord(ParseActionRecord.Create(string.Format("Call Match({0})", legalTokenName), this.peekScanner.Remaining, this.semanticRoutines.GeneratedCode));
+
             this.shapedWriter.PushWrite(currentToken.Name);
             this.shapedWriter.PopTab();
         }
@@ -251,7 +360,5 @@ namespace MicroParser.Domain
                 unexpectedToken.Name, 
                 unexpectedToken.Value));
         }
-
-        private MicroScanner microScanner = null;
     }
 }

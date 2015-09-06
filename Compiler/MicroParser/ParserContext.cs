@@ -2,6 +2,8 @@
 //      Copyright 2015 Maletz, Josh- For eductional purposes. Created while student of UCD CSCI 5640 - Universal Compiler.
 // </copyright>
 
+using System.Text;
+
 namespace MicroParser
 {
     using System;
@@ -17,7 +19,8 @@ namespace MicroParser
         public string InputFile { get; private set; }
         public string OutputFile { get; private set; }
         public string ShapedOutput { get; private set; }
-
+        public string MachineCode { get; private set; }
+        private CompilerOutput compilerOutput = null;
         private string inputProgram = string.Empty;
 
         public ParserContext(string inputFile, string outputFile)
@@ -37,7 +40,8 @@ namespace MicroParser
             }
             catch (Exception e)
             {
-                Console.WriteLine("Could not read input file. Details: {0}", e.ToString());
+                Console.WriteLine("Could not read input file. Details: {0}", e.Message);
+                Console.WriteLine();
             }
         }
 
@@ -47,9 +51,22 @@ namespace MicroParser
         public void ParseProgram()
         {
             var microParser = new MicroParser();
-            microParser.Parse(this.inputProgram);
+
+            try
+            {
+                microParser.Parse(this.inputProgram);
+            }
+            catch (SyntaxErrorException see)
+            {
+                Console.WriteLine("Cannot parse program - syntax error detected.");    
+                Console.WriteLine("Details: {0}", see.Message);    
+                Console.WriteLine();    
+                Console.WriteLine("Flushing output.");    
+            }
 
             this.ShapedOutput = microParser.Output;
+            this.MachineCode = microParser.MachineCode;
+            this.compilerOutput = microParser.CompilerParseActionList;
         }
 
         /// <summary>
@@ -59,11 +76,58 @@ namespace MicroParser
         public void FlushOutput()
         {
             WriteDefaultOutputToFile();
+            WriteMachineCodeToFile();
+            WriteParseActionsToFile();
         }
 
         private void WriteDefaultOutputToFile()
         {
             this.WriteFile(this.OutputFile, this.ShapedOutput);
+        }
+
+        private void WriteMachineCodeToFile()
+        {
+            this.WriteFile(this.GetMachineCodeOutputPath(), this.MachineCode);
+        }
+
+        private void WriteParseActionsToFile()
+        {
+            this.WriteFile(this.GetParseActionOutputPath(), GenerateParseActionList());
+        }
+
+        /// <summary>
+        /// Function for creating the content of our 'parseActions' output file. 
+        /// </summary>
+        /// <returns></returns>
+        private string GenerateParseActionList()
+        {
+            var actionBuilder = new StringBuilder();
+
+            foreach (var record in this.compilerOutput.ParseActionRecords)
+            {
+                actionBuilder.AppendLine(string.Format("Action: {0}", record.ParseAction));
+                actionBuilder.AppendLine(string.Format("Remaining Tokens: {0}", record.RemainingTokens));
+                actionBuilder.AppendLine("Generated Code:");
+                actionBuilder.AppendLine(record.GeneratedCodeThusFar);
+                actionBuilder.AppendLine(
+                    "============================================================================================");
+            }
+
+            return actionBuilder.ToString();
+        }
+
+        private string GetParseActionOutputPath()
+        {
+            return Path.ChangeExtension(
+                this.OutputFile,
+                string.Format("parseActions{0}", Path.GetExtension(this.OutputFile)));
+        }
+
+        private string GetMachineCodeOutputPath()
+        {
+            return Path.ChangeExtension(
+                this.OutputFile,
+                string.Format("machineCode{0}", Path.GetExtension(this.OutputFile)));
         }
 
         

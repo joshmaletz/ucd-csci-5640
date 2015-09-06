@@ -39,10 +39,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CompilerOutput.cs" />
+    <Compile Include="ExprKind.cs" />
+    <Compile Include="ExprRecord.cs" />
+    <Compile Include="MicroGenerator.cs" />
     <Compile Include="MicroParser.cs" />
+    <Compile Include="OpRecord.cs" />
+    <Compile Include="ParseActionRecord.cs" />
     <Compile Include="ParseTree.cs" />
     <Compile Include="PeekableScanner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SemanticRoutines.cs" />
     <Compile Include="ShapedWriter.cs" />
     <Compile Include="SyntaxErrorException.cs" />
   </ItemGroup>

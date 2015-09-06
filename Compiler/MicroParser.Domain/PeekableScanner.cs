@@ -5,6 +5,7 @@
 namespace MicroParser.Domain
 {
     using System.Collections.Generic;
+    using System.Text;
     using MicroScanner.Domain;
 
     /// <summary>
@@ -16,7 +17,7 @@ namespace MicroParser.Domain
     public class PeekableScanner
     {
         private readonly Queue<Token> tokenQueue;
-
+        
         /// <summary>
         /// Wrapper is simple:
         /// - Create a queue for tokens
@@ -42,6 +43,7 @@ namespace MicroParser.Domain
         /// <returns></returns>
         public Token Scan()
         {
+            this.tokenBufferValue = tokenQueue.Peek().Value;
             return tokenQueue.Dequeue();
         }
 
@@ -53,5 +55,33 @@ namespace MicroParser.Domain
         {
             return tokenQueue.Peek();
         }
+
+        /// <summary>
+        /// Allows the generator to get the value of the token buffer. 
+        /// </summary>
+        /// <returns></returns>
+        public string TokenBuffer()
+        {
+            return this.tokenBufferValue;
+        }
+
+        /// <summary>
+        /// Helper funtion to return all remaining tokens as a list.
+        /// </summary>
+        public string Remaining
+        {
+            get
+            {
+                var queueClone = this.tokenQueue.ToArray();
+                var builder = new StringBuilder();
+                foreach (var token in queueClone)
+                {
+                    builder.AppendFormat("{0} ", token.Value);
+                }
+                return builder.ToString();
+            }
+        }
+
+        private string tokenBufferValue = string.Empty;
     }
 }
